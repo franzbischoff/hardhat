@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">hardhat</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.2.0.9000</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">1.2.0.9000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,8 +58,27 @@
       <small>Source: <a href="https://github.com/tidymodels/hardhat/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2"><h2 class="pkg-version" data-toc-text="development version" id="hardhat-development-version">hardhat (development version)<a class="anchor" aria-label="anchor" href="#hardhat-development-version"></a></h2></div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="hardhat-development-version">hardhat (development version)<a class="anchor" aria-label="anchor" href="#hardhat-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.2.0" id="hardhat-120">hardhat 1.2.0<a class="anchor" aria-label="anchor" href="#hardhat-120"></a></h2><p class="text-muted">CRAN release: 2022-06-30</p>
+<ul><li>
+<p>We have reverted the change made in hardhat 1.0.0 that caused recipe preprocessors to drop non-standard roles by default when calling <code><a href="../reference/forge.html">forge()</a></code>. Determining what roles are required at <code><a href="https://recipes.tidymodels.org/reference/bake.html" class="external-link">bake()</a></code> time is really something that should be controlled within recipes, not hardhat. This results in the following changes (<a href="https://github.com/tidymodels/hardhat/issues/207" class="external-link">#207</a>):</p>
+<ul><li><p>The new argument, <code>bake_dependent_roles</code>, that was added to <code><a href="../reference/default_recipe_blueprint.html">default_recipe_blueprint()</a></code> in 1.0.0 has been removed. It is no longer needed with the new behavior.</p></li>
+<li><p>By default, <code><a href="../reference/forge.html">forge()</a></code> will pass on all columns from <code>new_data</code> to <code><a href="https://recipes.tidymodels.org/reference/bake.html" class="external-link">bake()</a></code> except those with roles of <code>"outcome"</code> or <code>"case_weights"</code>. With <code>outcomes = TRUE</code>, it will also pass on the <code>"outcome"</code> role. This is essentially the same as the pre-1.0.0 behavior, and means that, by default, all non-standard roles are required at <code><a href="https://recipes.tidymodels.org/reference/bake.html" class="external-link">bake()</a></code> time. This assumption is now also enforced by recipes 1.0.0, even if you aren’t using hardhat or a workflow.</p></li>
+<li><p>In the development version of recipes, which will become recipes 1.0.0, there is a new <code>update_role_requirements()</code> function that can be used to declare that a role is not required at <code><a href="https://recipes.tidymodels.org/reference/bake.html" class="external-link">bake()</a></code> time. hardhat now knows how to respect that feature, and in <code><a href="../reference/forge.html">forge()</a></code> it won’t pass on columns of <code>new_data</code> to <code><a href="https://recipes.tidymodels.org/reference/bake.html" class="external-link">bake()</a></code> that have roles that aren’t required at <code><a href="https://recipes.tidymodels.org/reference/bake.html" class="external-link">bake()</a></code> time.</p></li>
+</ul></li></ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.0" id="hardhat-110">hardhat 1.1.0<a class="anchor" aria-label="anchor" href="#hardhat-110"></a></h2><p class="text-muted">CRAN release: 2022-06-10</p>
+<ul><li><p>Fixed a bug where the results from calling <code><a href="../reference/mold.html">mold()</a></code> using hardhat &lt; 1.0.0 were no longer compatible with calling <code><a href="../reference/forge.html">forge()</a></code> in hardhat &gt;= 1.0.0. This could occur if you save a workflow object after fitting it, then load it into an R session that uses a newer version of hardhat (<a href="https://github.com/tidymodels/hardhat/issues/200" class="external-link">#200</a>).</p></li>
+<li>
+<p>Internal details related to how blueprints work alongside <code><a href="../reference/mold.html">mold()</a></code> and <code><a href="../reference/forge.html">forge()</a></code> were heavily re-factored to support the fix for <a href="https://github.com/tidymodels/hardhat/issues/200" class="external-link">#200</a>. These changes are mostly internal or developer focused. They include:</p>
+<ul><li><p>Blueprints no longer store the clean/process functions used when calling <code><a href="../reference/mold.html">mold()</a></code> and <code><a href="../reference/forge.html">forge()</a></code>. These were stored in <code>blueprint$mold$clean()</code>, <code>blueprint$mold$process()</code>, <code>blueprint$forge$clean()</code>, and <code>blueprint$forge$process()</code> and were strictly for internal use. Storing them in the blueprint caused problems because blueprints created with old versions of hardhat were unlikely to be compatible with newer versions of hardhat. This change means that <code><a href="../reference/new-blueprint.html">new_blueprint()</a></code> and the other blueprint constructors no longer have <code>mold</code> or <code>forge</code> arguments.</p></li>
+<li><p><code><a href="../reference/run-mold.html">run_mold()</a></code> has been repurposed. Rather than calling the <code>$clean()</code> and <code>$process()</code> functions (which, as mentioned above, are no longer in the blueprint), the methods for this S3 generic have been rewritten to directly call the current versions of the clean and process functions that live in hardhat. This should result in less accidental breaking changes.</p></li>
+<li><p>New <code><a href="../reference/run-forge.html">run_forge()</a></code> which is a <code><a href="../reference/forge.html">forge()</a></code> equivalent to <code><a href="../reference/run-mold.html">run_mold()</a></code>. It handles the clean/process steps that were previously handled by the <code>$clean()</code> and <code>$process()</code> functions stored directly in the blueprint.</p></li>
+</ul></li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.0" id="hardhat-100">hardhat 1.0.0<a class="anchor" aria-label="anchor" href="#hardhat-100"></a></h2><p class="text-muted">CRAN release: 2022-06-01</p>
 <ul><li><p>Recipe preprocessors now ignore non-standard recipe roles (i.e. not <code>"outcome"</code> or <code>"predictor"</code>) by default when calling <code><a href="../reference/forge.html">forge()</a></code>. Previously, it was assumed that all non-standard role columns present in the original training data were also required in the test data when <code><a href="../reference/forge.html">forge()</a></code> is called. It seems to be more often the case that those columns are actually not required to <code><a href="https://recipes.tidymodels.org/reference/bake.html" class="external-link">bake()</a></code> new data, and often won’t even be present when making predictions on new data. For example, a custom <code>"case_weights"</code> role might be required for computing case-weighted estimates at <code><a href="https://recipes.tidymodels.org/reference/prep.html" class="external-link">prep()</a></code> time, but won’t be necessary at <code><a href="https://recipes.tidymodels.org/reference/bake.html" class="external-link">bake()</a></code> time (since the estimates have already been pre-computed and stored). To account for the case when you do require a specific non-standard role to be present at <code><a href="https://recipes.tidymodels.org/reference/bake.html" class="external-link">bake()</a></code> time, <code><a href="../reference/default_recipe_blueprint.html">default_recipe_blueprint()</a></code> has gained a new argument, <code>bake_dependent_roles</code>, which can be set to a character vector of non-standard roles that are required.</p></li>
 <li><p>New <code><a href="../reference/weighted_table.html">weighted_table()</a></code> for generating a weighted contingency table, similar to <code><a href="https://rdrr.io/r/base/table.html" class="external-link">table()</a></code> (<a href="https://github.com/tidymodels/hardhat/issues/191" class="external-link">#191</a>).</p></li>
 <li><p>New experimental family of functions for working with case weights. In particular, <code><a href="../reference/frequency_weights.html">frequency_weights()</a></code> and <code><a href="../reference/importance_weights.html">importance_weights()</a></code> (<a href="https://github.com/tidymodels/hardhat/issues/190" class="external-link">#190</a>).</p></li>
@@ -89,9 +108,9 @@
 <ul><li><p>Setting <code>indicators = "none"</code> in <code><a href="../reference/default_formula_blueprint.html">default_formula_blueprint()</a></code> no longer accidentally expands character columns into dummy variable columns. They are now left completely untouched and pass through as characters. When <code>indicators = "traditional"</code> or <code>indicators = "one_hot"</code>, character columns are treated as unordered factors (<a href="https://github.com/tidymodels/hardhat/issues/139" class="external-link">#139</a>).</p></li>
 <li>
 <p>The <code>indicators</code> argument of <code><a href="../reference/default_formula_blueprint.html">default_formula_blueprint()</a></code> now takes character input rather than logical. To update:</p>
-<pre><code><span class="va">indicators</span> <span class="op">=</span> <span class="cn">TRUE</span>  <span class="op">-&gt;</span> <span class="va">indicators</span> <span class="op">=</span> <span class="st">"traditional"</span>
-
-<span class="va">indicators</span> <span class="op">=</span> <span class="cn">FALSE</span> <span class="op">-&gt;</span> <span class="va">indicators</span> <span class="op">=</span> <span class="st">"none"</span></code></pre>
+<pre><code><span><span class="va">indicators</span> <span class="op">=</span> <span class="cn">TRUE</span>  <span class="op">-&gt;</span> <span class="va">indicators</span> <span class="op">=</span> <span class="st">"traditional"</span></span>
+<span></span>
+<span><span class="va">indicators</span> <span class="op">=</span> <span class="cn">FALSE</span> <span class="op">-&gt;</span> <span class="va">indicators</span> <span class="op">=</span> <span class="st">"none"</span></span></code></pre>
 <p>Logical input for <code>indicators</code> will continue to work, with a warning, until hardhat 0.1.6, where it will be formally deprecated.</p>
 <p>There is also a new <code>indicators = "one_hot"</code> option which expands all factor columns into <code>K</code> dummy variable columns corresponding to the <code>K</code> levels of that factor, rather than the more traditional <code>K - 1</code> expansion.</p>
 </li>
@@ -126,7 +145,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
   </div></footer></body></html>
